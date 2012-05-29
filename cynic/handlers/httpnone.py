@@ -26,8 +26,10 @@ __author__ = 'Ruslan Spivak <ruslan.spivak@gmail.com>'
 
 from BaseHTTPServer import BaseHTTPRequestHandler
 
+from cynic.handlers.base import BaseHTTPHandler
 
-class StandardHTTPHandler(BaseHTTPRequestHandler):
+
+class NoBodyHTTPHandler(BaseHTTPRequestHandler):
     protocol_version = 'HTTP/1.0'
 
     def do_GET(self):
@@ -38,24 +40,22 @@ class StandardHTTPHandler(BaseHTTPRequestHandler):
         self.send_header('Content-Length', len(body))
         self.send_header('Content-Type', self.server.CONTENT_TYPE)
         self.end_headers()
-        self.wfile.write(body)
+        # body is not sent
 
 
-class BaseHTTPHandler(object):
+class NoBodyResponse(BaseHTTPHandler):
+    """HTTP handler that doesn't send the response body.
 
-    CONTENT_TYPE = 'text/plain'
+    Accepts request, sends response headers,
+    and never sends the response body.
+    """
 
-    TEMPLATE = ''
-
-    def __init__(self, request, client_address,
-                 datapath=None, httpclass=StandardHTTPHandler):
-        self.request = request
-        self.client_address = client_address
-        self.data = open(datapath).read() if datapath is not None else ''
-        self.httpclass = httpclass
-
-
-    def handle(self):
-        # generate and send HTTP response
-        self.httpclass(self.request, self.client_address, self)
+    def __init__(self,
+                 request,
+                 client_address,
+                 datapath=None,
+                 httpclass=NoBodyHTTPHandler
+                 ):
+        super(NoBodyResponse, self).__init__(
+            request, client_address, datapath, httpclass)
 
