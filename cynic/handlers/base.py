@@ -27,6 +27,22 @@ __author__ = 'Ruslan Spivak <ruslan.spivak@gmail.com>'
 from BaseHTTPServer import BaseHTTPRequestHandler
 
 
+class BaseHandler(object):
+    """Base handler class."""
+
+    def __init__(self, request, client_address):
+        """
+        Args:
+            request - connected socket returned by server's accept
+            client_address - tuple containing client_host and client_port
+        """
+        self.request = request
+        self.client_address = client_address
+
+    def handle(self):
+        pass
+
+
 class StandardHTTPHandler(BaseHTTPRequestHandler):
     protocol_version = 'HTTP/1.0'
 
