@@ -31,12 +31,47 @@ import socket
 import select
 import signal
 import optparse
+import StringIO
 import ConfigParser
 
 READ_ONLY = select.POLLIN
 POLL_TIMEOUT = 1000 # 1 sec
 BACKLOG = 5
 
+DEFAULT_CONFIG = """\
+[handler:httphtml]
+# send simple 'hello world!' HTML page over HTTP as a response
+class = cynic.handlers.httphtml.HTTPHtmlResponse
+#args = ('/tmp/test.html', )
+host = 0.0.0.0
+port = 2000
+
+[handler:httpjson]
+# send simple 'hello world!' JSON over HTTP as a response
+class = cynic.handlers.httpjson.HTTPJsonResponse
+#args = ('/tmp/test.json', )
+host = 0.0.0.0
+port = 2001
+
+[handler:httpnone]
+# send headers, but not the response body
+class = cynic.handlers.httpnone.HTTPNoBodyResponse
+host = 0.0.0.0
+port = 2002
+
+[handler:httpslow]
+# send one byte of response every 30 seconds
+class = cynic.handlers.httpslow.HTTPSlowResponse
+#args = ('/tmp/test.json', 'application/json', 1)
+host = 0.0.0.0
+port = 2003
+
+[handler:reset]
+# accepts connection and sends RST packet right away
+class = cynic.handlers.reset.RSTResponse
+host = 0.0.0.0
+port = 2004
+"""
 
 # taken from logging.config
 def _resolve(name):
@@ -185,11 +220,11 @@ def main():
 
     options, args = parser.parse_args()
 
-    if options.config_path is None:
-        parser.error('Configuration file is not specified')
-        sys.exit(1)
+    path = options.config_path
+    if path is None:
+        path = StringIO.StringIO(DEFAULT_CONFIG)
 
-    config = _load_config(options.config_path)
+    config = _load_config(path)
     handlers = _get_handler_configs(config)
     ioloop = IOLoop(handlers)
     ioloop.run()
