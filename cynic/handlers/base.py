@@ -28,50 +28,51 @@ from BaseHTTPServer import BaseHTTPRequestHandler
 
 
 class BaseHandler(object):
-    """Base handler class."""
+    """Base handler class for stream sockets."""
 
-    def __init__(self, request, client_address):
+    def __init__(self, connection, client_address):
         """
         Args:
-            request - connected socket returned by server's accept
+            connection - connected socket returned by server's accept
             client_address - tuple containing client_host and client_port
         """
-        self.request = request
+        self.connection = connection
         self.client_address = client_address
 
     def handle(self):
         pass
 
 
-class StandardHTTPHandler(BaseHTTPRequestHandler):
+class BaseHTTPHandler(BaseHTTPRequestHandler):
+    """Base handler class for HTTP protocol."""
+
     protocol_version = 'HTTP/1.0'
 
-    def do_GET(self):
-        body = self.server.TEMPLATE
-        if self.server.data:
-            body = self.server.data
-        self.send_response(200)
-        self.send_header('Content-Length', len(body))
-        self.send_header('Content-Type', self.server.CONTENT_TYPE)
-        self.end_headers()
-        self.wfile.write(body)
-
-
-class BaseHTTPHandler(object):
-
     CONTENT_TYPE = 'text/plain'
-
     TEMPLATE = ''
 
-    def __init__(self, request, client_address,
-                 datapath=None, httpclass=StandardHTTPHandler):
-        self.request = request
+    def __init__(self, connection, client_address, datapath=None):
+        """
+        Args:
+            connection - connected socket returned by server's accept
+            client_address - tuple containing client_host and client_port
+            datapath - file path to a data file that will be sent as
+                       as a response body to the client
+        """
+        self.connection = self.request = connection
         self.client_address = client_address
+        self.server = self
+        self.setup()
+
         self.data = open(datapath).read() if datapath is not None else ''
-        self.httpclass = httpclass
 
-
-    def handle(self):
-        # generate and send HTTP response
-        self.httpclass(self.request, self.client_address, self)
-
+    def do_GET(self):
+        """HTTP GET request handler"""
+        body = self.TEMPLATE
+        if self.data:
+            body = self.data
+        self.send_response(200)
+        self.send_header('Content-Length', len(body))
+        self.send_header('Content-Type', self.CONTENT_TYPE)
+        self.end_headers()
+        self.wfile.write(body)

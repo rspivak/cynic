@@ -31,10 +31,10 @@ from cynic.handlers.base import BaseHandler
 
 
 class RSTResponse(BaseHandler):
-    """Sends RST packet to a client."""
+    """Sends an RST packet to a client."""
 
     def handle(self):
-        sock = self.request
+        sock = self.connection
         l_onoff = 1 # cause RST to be sent on socket.close()
         l_linger = 0
         ling = struct.pack('ii', l_onoff, l_linger)

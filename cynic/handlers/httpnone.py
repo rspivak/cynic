@@ -24,38 +24,19 @@
 
 __author__ = 'Ruslan Spivak <ruslan.spivak@gmail.com>'
 
-from BaseHTTPServer import BaseHTTPRequestHandler
-
 from cynic.handlers.base import BaseHTTPHandler
 
 
-class NoBodyHTTPHandler(BaseHTTPRequestHandler):
-    protocol_version = 'HTTP/1.0'
-
-    def do_GET(self):
-        body = self.server.TEMPLATE
-        if self.server.data:
-            body = self.server.data
-        self.send_response(200)
-        self.send_header('Content-Length', len(body))
-        self.send_header('Content-Type', self.server.CONTENT_TYPE)
-        self.end_headers()
-        # body is not sent
-
-
-class NoBodyResponse(BaseHTTPHandler):
+class HTTPNoBodyResponse(BaseHTTPHandler):
     """HTTP handler that doesn't send the response body.
 
     Accepts request, sends response headers,
     and never sends the response body.
     """
 
-    def __init__(self,
-                 request,
-                 client_address,
-                 datapath=None,
-                 httpclass=NoBodyHTTPHandler
-                 ):
-        super(NoBodyResponse, self).__init__(
-            request, client_address, datapath, httpclass)
+    def do_GET(self):
+        self.send_response(200)
+        self.send_header('Content-Type', self.CONTENT_TYPE)
+        self.end_headers()
+        # body is not sent
 

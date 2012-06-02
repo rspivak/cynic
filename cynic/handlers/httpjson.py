@@ -27,7 +27,7 @@ __author__ = 'Ruslan Spivak <ruslan.spivak@gmail.com>'
 from cynic.handlers.base import BaseHTTPHandler
 
 
-class JSONResponse(BaseHTTPHandler):
+class HTTPJsonResponse(BaseHTTPHandler):
 
     CONTENT_TYPE = 'application/json'
 

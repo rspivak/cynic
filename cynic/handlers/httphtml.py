@@ -24,18 +24,20 @@
 
 __author__ = 'Ruslan Spivak <ruslan.spivak@gmail.com>'
 
+import textwrap
+
 from cynic.handlers.base import BaseHTTPHandler
 
 
-class HTMLResponse(BaseHTTPHandler):
+class HTTPHtmlResponse(BaseHTTPHandler):
 
     CONTENT_TYPE = 'text/html'
 
-    TEMPLATE = """\
+    TEMPLATE = textwrap.dedent("""\
     <html>
       <body>
         <h1>Hello, World!</h1>
       </body>
     </html>
-    """
+    """)
 

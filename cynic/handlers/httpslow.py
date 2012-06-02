@@ -25,35 +25,12 @@
 __author__ = 'Ruslan Spivak <ruslan.spivak@gmail.com>'
 
 import time
-from BaseHTTPServer import BaseHTTPRequestHandler
 
 from cynic.handlers.base import BaseHTTPHandler
 
 
-class SlowHTTPHandler(BaseHTTPRequestHandler):
-    protocol_version = 'HTTP/1.0'
-
-    def do_GET(self):
-        body = self.server.TEMPLATE
-        if self.server.data:
-            body = self.server.data
-        self.send_response(200)
-        self.send_header('Content-Length', len(body))
-        self.send_header('Content-Type', self.server.CONTENT_TYPE)
-        self.end_headers()
-        # send a byte of data every sleep_interval
-        for ch in body:
-            self.wfile.write(ch)
-            self.wfile.flush()
-            time.sleep(self.server.sleep_interval)
-
-
-class SlowResponse(BaseHTTPHandler):
-    """HTTP handler that doesn't send the response body.
-
-    Accepts request, sends response headers,
-    and never sends the response body.
-    """
+class HTTPSlowResponse(BaseHTTPHandler):
+    """HTTP handler that sends one byte of response every 30 seconds."""
 
     CONTENT_TYPE = 'application/json'
 
@@ -61,14 +38,26 @@ class SlowResponse(BaseHTTPHandler):
 
 
     def __init__(self,
-                 request,
+                 connection,
                  client_address,
                  datapath=None,
                  content_type='application/json',
                  sleep_interval=30, # secs
-                 httpclass=SlowHTTPHandler
                  ):
-        super(SlowResponse, self).__init__(
-            request, client_address, datapath, httpclass)
+        BaseHTTPHandler.__init__(self, connection, client_address, datapath)
         self.CONTENT_TYPE = content_type
         self.sleep_interval = sleep_interval
+
+    def do_GET(self):
+        body = self.TEMPLATE
+        if self.data:
+            body = self.data
+        self.send_response(200)
+        self.send_header('Content-Length', len(body))
+        self.send_header('Content-Type', self.CONTENT_TYPE)
+        self.end_headers()
+        # send a byte of data every sleep_interval seconds
+        for ch in body:
+            self.wfile.write(ch)
+            self.wfile.flush()
+            time.sleep(self.sleep_interval)
