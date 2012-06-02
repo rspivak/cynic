@@ -163,6 +163,9 @@ class IOLoop(object):
             server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
             server.setblocking(0)
 
+            print 'Starting service %-20r on port %s' % (
+                hconfig.klass.__name__, hconfig.port)
+
             self.fd_to_hconfig[server.fileno()] = server, hconfig
             server.bind((hconfig.host, hconfig.port))
             server.listen(BACKLOG)
