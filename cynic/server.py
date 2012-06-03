@@ -73,6 +73,12 @@ port = 2003
 class = cynic.handlers.reset.RSTResponse
 host = 0.0.0.0
 port = 2004
+
+[handler:random]
+# accepts connection and sends 7 bytes from /dev/urandom
+class = cynic.handlers.rnd.RandomDataResponse
+host = 0.0.0.0
+port = 2005
 """
 
 # Setup our console logger
