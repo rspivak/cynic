@@ -296,4 +296,7 @@ def main():
     config = _load_config(path)
     handlers = _get_handler_configs(config)
     ioloop = IOLoop(handlers)
-    ioloop.run()
+    try:
+        ioloop.run()
+    except KeyboardInterrupt:
+        pass
