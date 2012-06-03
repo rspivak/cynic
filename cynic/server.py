@@ -217,6 +217,7 @@ class IOLoop(object):
 
             self.fd2config[server.fileno()] = config
 
+            # this is only for Unix socket
             self._unlink_file(config)
 
             server.bind(self._get_address(config))
