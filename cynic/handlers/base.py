@@ -57,13 +57,15 @@ class BaseHTTPHandler(BaseHTTPRequestHandler):
     TEMPLATE = ''
     LOGGER_NAME = __name__
 
-    def __init__(self, connection, client_address, datapath=None):
+    def __init__(self, connection, client_address,
+                 datapath=None, content_type=None):
         """
         Args:
             connection - connected socket returned by server's accept
             client_address - tuple containing client_host and client_port
             datapath - file path to a data file that will be sent as
                        as a response body to the client
+            content_type - HTTP response Content-Type header value
         """
         self.connection = self.request = connection
         self.client_address = client_address
@@ -72,6 +74,8 @@ class BaseHTTPHandler(BaseHTTPRequestHandler):
 
         self.data = open(datapath).read() if datapath is not None else ''
         self.logger = get_stream_logger(self.LOGGER_NAME)
+        if content_type is not None:
+            self.CONTENT_TYPE = content_type
 
     def do_GET(self):
         """HTTP GET request handler"""
