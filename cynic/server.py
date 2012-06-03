@@ -79,6 +79,13 @@ port = 2004
 class = cynic.handlers.rnd.RandomDataResponse
 host = 0.0.0.0
 port = 2005
+
+[handler:noresp]
+# accepts connection, but doesn't send any response back.
+# sleeps for 24 hours and exits
+class = cynic.handlers.noresp.NoResponse
+host = 0.0.0.0
+port = 2006
 """
 
 # Setup our console logger
