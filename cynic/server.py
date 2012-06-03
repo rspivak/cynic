@@ -34,7 +34,7 @@ import optparse
 import StringIO
 import ConfigParser
 
-from cynic.utils import LOG_UNIX_SOCKET, get_console_logger
+from cynic.utils import LOG_UNIX_SOCKET, get_console_logger, get_stream_logger
 
 READ_ONLY = select.POLLIN
 POLL_TIMEOUT = 500 # 0.5 sec
@@ -260,9 +260,16 @@ class IOLoop(object):
                 if pid == 0: # child
                     for config in self.fd2config.values():
                         config.socket.close()
+                    # run a handler
                     klass = handler_config.klass
                     handler = klass(conn, client_address, *handler_config.args)
-                    handler.handle()
+                    try:
+                        handler.handle()
+                    except KeyboardInterrupt:
+                        pass
+                    except:
+                        logger = get_console_logger(klass.__name__)
+                        logger.exception('Exception when handling a request')
                     os._exit(0)
                 else:
                     conn.close()
