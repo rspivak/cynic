@@ -321,9 +321,16 @@ class IOLoop(object):
 
 
 def main():
-    parser = optparse.OptionParser()
-    parser.add_option('-c', '--config', dest='config_path',
-                      help='Path to configuration file')
+    parser = optparse.OptionParser(
+        description='Test harness to make your system under test cynical ')
+    parser.add_option(
+        '-c', '--config', dest='config_path',
+        help=(
+            'Path to an INI configuration file. If no configuration '
+            'file is provided then default configuration is applied. '
+            'To see the default configuration use -d option described below.'
+            )
+        )
     parser.add_option(
         '-d', '--dump', dest='dump', action='store_true',
         default=False, help='Dump default configuration to STDOUT'
