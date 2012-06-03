@@ -34,6 +34,8 @@ class HTTPNoBodyResponse(BaseHTTPHandler):
     and never sends the response body.
     """
 
+    LOGGER_NAME = __name__
+
     def do_GET(self):
         self.send_response(200)
         self.send_header('Content-Type', self.CONTENT_TYPE)

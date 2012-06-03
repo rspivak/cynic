@@ -26,9 +26,13 @@ __author__ = 'Ruslan Spivak <ruslan.spivak@gmail.com>'
 
 from BaseHTTPServer import BaseHTTPRequestHandler
 
+from cynic.utils import get_stream_logger # do not call at module level
+
 
 class BaseHandler(object):
     """Base handler class for stream sockets."""
+
+    LOGGER_NAME = __name__
 
     def __init__(self, connection, client_address):
         """
@@ -38,6 +42,7 @@ class BaseHandler(object):
         """
         self.connection = connection
         self.client_address = client_address
+        self.logger = get_stream_logger(self.LOGGER_NAME)
 
     def handle(self):
         pass
@@ -50,6 +55,7 @@ class BaseHTTPHandler(BaseHTTPRequestHandler):
 
     CONTENT_TYPE = 'text/plain'
     TEMPLATE = ''
+    LOGGER_NAME = __name__
 
     def __init__(self, connection, client_address, datapath=None):
         """
@@ -65,6 +71,7 @@ class BaseHTTPHandler(BaseHTTPRequestHandler):
         self.setup()
 
         self.data = open(datapath).read() if datapath is not None else ''
+        self.logger = get_stream_logger(self.LOGGER_NAME)
 
     def do_GET(self):
         """HTTP GET request handler"""
@@ -76,3 +83,7 @@ class BaseHTTPHandler(BaseHTTPRequestHandler):
         self.send_header('Content-Type', self.CONTENT_TYPE)
         self.end_headers()
         self.wfile.write(body)
+
+    def log_message(self, format, *args):
+        """Overridden method from the base class to use our logger."""
+        self.logger.info(format % args)

@@ -51,9 +51,10 @@ setup(
     author_email='ruslan.spivak@gmail.com',
     packages=find_packages(),
     zip_safe=False,
+    install_requires=['logsna'],
     entry_points="""\
     [console_scripts]
-    cynic = cynic.cynic:main
+    cynic = cynic:main
     """,
     classifiers=filter(None, classifiers.split('\n')),
     long_description=read('README.rst') + '\n\n' + read('CHANGES.rst'),

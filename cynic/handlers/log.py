@@ -24,41 +24,44 @@
 
 __author__ = 'Ruslan Spivak <ruslan.spivak@gmail.com>'
 
-import time
+import pickle
+import struct
+import logging
 
-from cynic.handlers.base import BaseHTTPHandler
+from cynic.handlers.base import BaseHandler
+from cynic.utils import get_console_logger
 
 
-class HTTPSlowResponse(BaseHTTPHandler):
-    """HTTP handler that sends one byte of response every 30 seconds."""
+# Based on LogRecordStreamHandler example from standard logging documentation
+class LogRecordHandler(BaseHandler):
+    """Handler for a Unix Domain streaming logging request.
 
-    CONTENT_TYPE = 'application/json'
+    It logs the logging record using whatever logging policy
+    is configured locally.
+    """
 
-    TEMPLATE = '{"message": "Hello, World!"}'
+    def handle(self):
+        """Handle multiple requests.
 
-    LOGGER_NAME = __name__
+        Each request is expected to be a 4-byte length, followed by
+        the LogRecord in pickle format.
+        """
+        while True:
+            chunk = self.connection.recv(4)
+            if len(chunk) < 4:
+                break
+            slen = struct.unpack('>L', chunk)[0]
+            chunk = self.connection.recv(slen)
+            while len(chunk) < slen:
+                chunk = chunk + self.connection.recv(slen - len(chunk))
 
-    def __init__(self,
-                 connection,
-                 client_address,
-                 datapath=None,
-                 content_type='application/json',
-                 sleep_interval=30, # secs
-                 ):
-        BaseHTTPHandler.__init__(self, connection, client_address, datapath)
-        self.CONTENT_TYPE = content_type
-        self.sleep_interval = sleep_interval
+            # unpickle
+            obj = pickle.loads(chunk)
 
-    def do_GET(self):
-        body = self.TEMPLATE
-        if self.data:
-            body = self.data
-        self.send_response(200)
-        self.send_header('Content-Length', len(body))
-        self.send_header('Content-Type', self.CONTENT_TYPE)
-        self.end_headers()
-        # send a byte of data every sleep_interval seconds
-        for ch in body:
-            self.wfile.write(ch)
-            self.wfile.flush()
-            time.sleep(self.sleep_interval)
+            # log the record
+            record = logging.makeLogRecord(obj)
+            self.log_record(record)
+
+    def log_record(self, record):
+        logger = get_console_logger(record.name)
+        logger.handle(record)

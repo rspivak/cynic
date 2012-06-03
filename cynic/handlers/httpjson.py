@@ -33,3 +33,4 @@ class HTTPJsonResponse(BaseHTTPHandler):
 
     TEMPLATE = '{"message": "Hello, World!"}'
 
+    LOGGER_NAME = __name__

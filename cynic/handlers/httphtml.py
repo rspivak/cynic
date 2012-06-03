@@ -41,3 +41,4 @@ class HTTPHtmlResponse(BaseHTTPHandler):
     </html>
     """)
 
+    LOGGER_NAME = __name__

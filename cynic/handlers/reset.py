@@ -33,7 +33,10 @@ from cynic.handlers.base import BaseHandler
 class RSTResponse(BaseHandler):
     """Sends an RST packet to a client."""
 
+    LOGGER_NAME = __name__
+
     def handle(self):
+        self.logger.debug('Sending RST packet')
         sock = self.connection
         l_onoff = 1 # cause RST to be sent on socket.close()
         l_linger = 0
