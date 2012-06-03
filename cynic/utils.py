@@ -30,11 +30,12 @@ from logging import handlers
 
 import logsna
 
+LOG_UNIX_SOCKET = '/tmp/_cynic.sock'
 
 class LogUnixSocketHandler(handlers.SocketHandler):
     """Sends pickled log records over a Unix domain socket."""
 
-    def __init__(self, host='/tmp/_cynic.sock'):
+    def __init__(self, host=LOG_UNIX_SOCKET):
         """host - a path to socket"""
         handlers.SocketHandler.__init__(self, host, None)
 

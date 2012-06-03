@@ -34,10 +34,10 @@ import optparse
 import StringIO
 import ConfigParser
 
-from cynic.utils import get_console_logger
+from cynic.utils import LOG_UNIX_SOCKET, get_console_logger
 
 READ_ONLY = select.POLLIN
-POLL_TIMEOUT = 1000 # 1 sec
+POLL_TIMEOUT = 500 # 0.5 sec
 BACKLOG = 5
 
 DEFAULT_CONFIG = """\
@@ -74,6 +74,10 @@ class = cynic.handlers.reset.RSTResponse
 host = 0.0.0.0
 port = 2004
 """
+
+# Setup our console logger
+logger = get_console_logger('server')
+
 
 # taken from logging.config
 def _resolve(name):
@@ -124,14 +128,14 @@ class HandlerConfig(object):
         self.host = host
         self.port = port
         self.family = family
+        self.socket = None # set up by the server
 
 
 def _get_loghandler_config():
     # special config for the server's log handler
     klass = _resolve('cynic.handlers.log.LogRecordHandler')
-    host = '/tmp/_cynic.sock'
-    port = None # signifies AF_UNIX protocol
     args = ()
+    host, port = LOG_UNIX_SOCKET, None
     hconfig = HandlerConfig(klass, args, host, port, family='unix')
     return hconfig
 
@@ -158,10 +162,6 @@ def _get_handler_configs(config):
     return configs
 
 
-# Setup our console logger
-logger = get_console_logger('server')
-
-
 class IOLoop(object):
     """Main IO loop.
 
@@ -169,7 +169,7 @@ class IOLoop(object):
     """
     def __init__(self, handler_configs):
         self.handler_configs = handler_configs
-        self.fd_to_hconfig = {}
+        self.fd2config = {}
         self.poller = None
         self._setup()
 
@@ -199,24 +199,27 @@ class IOLoop(object):
 
         self.poller = poller = select.poll()
 
-        for hconfig in self.handler_configs:
+        for config in self.handler_configs:
             server = socket.socket(
-                self._get_family(hconfig), socket.SOCK_STREAM)
+                self._get_family(config), socket.SOCK_STREAM)
             server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
             server.setblocking(0)
 
             logger.info(
                 'Starting %-20r on port %s',
-                hconfig.klass.__name__, hconfig.port or hconfig.host
+                config.klass.__name__, config.port or config.host
                 )
 
-            self.fd_to_hconfig[server.fileno()] = server, hconfig
+            self.fd2config[server.fileno()] = config
 
-            self._unlink_file(hconfig)
+            self._unlink_file(config)
 
-            server.bind(self._get_address(hconfig))
+            server.bind(self._get_address(config))
 
             server.listen(BACKLOG)
+
+            # save the listen socket for further use
+            config.socket = server
 
             poller.register(server, READ_ONLY)
 
@@ -233,17 +236,18 @@ class IOLoop(object):
                     raise
 
             for fd, flag in events:
-                # retrieve the actual socket and handler class
-                # from its file descriptor
-                sock, hconfig = self.fd_to_hconfig[fd]
-
                 # we're interested only in READ events
                 if not flag & READ_ONLY:
                     continue
 
+                # retrieve the actual socket and handler class
+                # from its file descriptor
+                handler_config = self.fd2config[fd]
+
                 # socket is ready to accept a connection
+                socket = handler_config.socket
                 try:
-                    request, client_address = sock.accept()
+                    conn, client_address = socket.accept()
                 except IOError as e:
                     code, msg = e.args
                     if code == errno.EINTR:
@@ -254,14 +258,14 @@ class IOLoop(object):
                 # spawn a child that will handle the request (connection)
                 pid = os.fork()
                 if pid == 0: # child
-                    for sock, _ in self.fd_to_hconfig.values():
-                        sock.close()
-                    klass = hconfig.klass
-                    handler = klass(request, client_address, *hconfig.args)
+                    for config in self.fd2config.values():
+                        config.socket.close()
+                    klass = handler_config.klass
+                    handler = klass(conn, client_address, *handler_config.args)
                     handler.handle()
                     os._exit(0)
                 else:
-                    request.close()
+                    conn.close()
 
 
 def main():
