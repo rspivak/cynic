@@ -133,8 +133,7 @@ class HandlerConfig(object):
 
 def _get_loghandler_config():
     # special config for the server's log handler
-    klass = _resolve('cynic.handlers.log.LogRecordHandler')
-    args = ()
+    klass, args = _resolve('cynic.handlers.log.LogRecordHandler'), ()
     host, port = LOG_UNIX_SOCKET, None
     hconfig = HandlerConfig(klass, args, host, port, family='unix')
     return hconfig
