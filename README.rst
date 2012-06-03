@@ -30,7 +30,7 @@ Default configuration
 
 ::
 
-    $ cynic -h
+    $ cynic -d
 
     ############################################################
     # HTTP protocol specific                                   #
