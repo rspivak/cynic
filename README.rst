@@ -2,7 +2,107 @@ What is this?
 -------------
 **Cynic** is a test harness that can be used to simulate
 remote integration points (mainly Web services) that are nasty,
-malicious, and cunning. Its goal is to make your system under test cynical.
+malicious, and cunning. Its goal is to make your system under test
+cynical.
+
+Let's check out help options
+----------------------------
+
+.. code-block :: bash
+
+    $ cynic -h
+    Usage: cynic [options]
+
+    Test harness to make your system under test cynical
+
+    Options:
+      -h, --help            show this help message and exit
+      -c CONFIG_PATH, --config=CONFIG_PATH
+                            Path to an INI configuration file. If no configuration
+                            file is provided then default configuration is
+                            applied. To see the default configuration use -d
+                            option described below.
+      -d, --dump            Dump default configuration to STDOUT
+
+
+Default configuration
+---------------------
+
+.. code-block :: bash
+
+    $ cynic -h
+
+    ############################################################
+    # HTTP protocol specific                                   #
+    ############################################################
+
+    [handler:httphtml]
+    # sends simple 'hello world!' HTML page over HTTP as a response
+    # and terminates
+    class = cynic.handlers.httphtml.HTTPHtmlResponse
+    #args = ('/tmp/test.html', )
+    host = 0.0.0.0
+    port = 2000
+
+    [handler:httpjson]
+    # sends simple 'hello world!' JSON over HTTP as a response
+    # and terminates
+    class = cynic.handlers.httpjson.HTTPJsonResponse
+    #args = ('/tmp/test.json', )
+    host = 0.0.0.0
+    port = 2001
+
+    [handler:httpnone]
+    # sends headers, but not the response body and terminates
+    class = cynic.handlers.httpnone.HTTPNoBodyResponse
+    host = 0.0.0.0
+    port = 2002
+
+    [handler:httpslow]
+    # sends one byte of the response every 30 seconds.
+    # when the data to be sent is exhausted - terminates
+    class = cynic.handlers.httpslow.HTTPSlowResponse
+    #args = ('/tmp/test.json', 'application/json', 1)
+    host = 0.0.0.0
+    port = 2003
+
+
+    ############################################################
+    # Any TCP socket protocol                                  #
+    ############################################################
+
+    [handler:reset]
+    # accepts a connection, sends an RST packet right away
+    # and terminates
+    class = cynic.handlers.reset.RSTResponse
+    host = 0.0.0.0
+    port = 2020
+
+    [handler:random]
+    # accepts a connection, sends 7 bytes from the /dev/urandom device
+    # and terminates
+    class = cynic.handlers.rnd.RandomDataResponse
+    host = 0.0.0.0
+    port = 2021
+
+    [handler:noresp]
+    # accepts a connection, but doesn't send any response back.
+    # sleeps for 24 hours and exits
+    class = cynic.handlers.noresp.NoResponse
+    host = 0.0.0.0
+    port = 2022
+
+    ############################################################
+    # System handlers used internally by the Cynic server      #
+    ############################################################
+
+    [handler:unixlog]
+    # a logging server that accepts connections over Unix socket
+    # from multiple local processes to output passed log records
+    class = cynic.handlers.log.LogRecordHandler
+    host = /tmp/_cynic.sock
+    port = 0
+    family = unix
 
 
 Installation
@@ -10,7 +110,7 @@ Installation
 
 The bleeding edge version from the git master branch:
 
-::
+.. code-block :: bash
 
     $ [sudo] pip install git+https://github.com/rspivak/cynic.git#egg=cynic
 
