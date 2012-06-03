@@ -54,7 +54,7 @@ setup(
     install_requires=['logsna'],
     entry_points="""\
     [console_scripts]
-    cynic = cynic:main
+    cynic = cynic.server:main
     """,
     classifiers=filter(None, classifiers.split('\n')),
     long_description=read('README.rst') + '\n\n' + read('CHANGES.rst'),
