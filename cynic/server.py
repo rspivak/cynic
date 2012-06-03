@@ -230,54 +230,67 @@ class IOLoop(object):
 
 
     def run(self):
-        while True:
-            try:
-                events = self.poller.poll(POLL_TIMEOUT)
-            except select.error as e:
-                code, msg = e.args
-                if code == errno.EINTR:
-                    continue
-                else:
-                    raise
-
-            for fd, flag in events:
-                # we're interested only in READ events
-                if not flag & READ_ONLY:
-                    continue
-
-                # retrieve the actual socket and handler class
-                # from its file descriptor
-                handler_config = self.fd2config[fd]
-
-                # socket is ready to accept a connection
-                socket = handler_config.socket
+        try:
+            child_pids = []
+            while True:
                 try:
-                    conn, client_address = socket.accept()
-                except IOError as e:
+                    events = self.poller.poll(POLL_TIMEOUT)
+                except select.error as e:
                     code, msg = e.args
                     if code == errno.EINTR:
                         continue
                     else:
                         raise
 
-                # spawn a child that will handle the request (connection)
-                pid = os.fork()
-                if pid == 0: # child
-                    for config in self.fd2config.values():
-                        config.socket.close()
-                    # run a handler
-                    klass = handler_config.klass
-                    handler = klass(conn, client_address, *handler_config.args)
+                for fd, flag in events:
+                    # we're interested only in READ events
+                    if not flag & READ_ONLY:
+                        continue
+
+                    # retrieve the actual socket and handler class
+                    # from its file descriptor
+                    handler_config = self.fd2config[fd]
+
+                    # socket is ready to accept a connection
+                    socket = handler_config.socket
                     try:
-                        handler.handle()
-                    except KeyboardInterrupt:
-                        pass
-                    except:
-                        logger = get_console_logger(klass.__name__)
-                        logger.exception('Exception when handling a request')
-                    os._exit(0)
-                else:
-                    conn.close()
+                        conn, client_address = socket.accept()
+                    except IOError as e:
+                        code, msg = e.args
+                        if code == errno.EINTR:
+                            continue
+                        else:
+                            raise
+
+                    # spawn a child that will handle the request (connection)
+                    pid = os.fork()
+                    if pid == 0: # child
+                        for config in self.fd2config.values():
+                            config.socket.close()
+                        # run a handler
+                        klass = handler_config.klass
+                        handler = klass(
+                            conn, client_address, *handler_config.args)
+                        try:
+                            handler.handle()
+                        except KeyboardInterrupt:
+                            pass
+                        except:
+                            log = get_console_logger(klass.__name__)
+                            log.exception('Exception when handling a request')
+                        # off we go
+                        os._exit(0)
+                    else:
+                        # this is parent
+                        child_pids.append(pid)
+                        # close unused connected socket
+                        conn.close()
+        except KeyboardInterrupt:
+            for pid in child_pids:
+                try:
+                    os.kill(pid, signal.SIGTERM)
+                except:
+                    pass
 
 
 def main():
@@ -302,7 +315,5 @@ def main():
     config = _load_config(path)
     handlers = _get_handler_configs(config)
     ioloop = IOLoop(handlers)
-    try:
-        ioloop.run()
-    except KeyboardInterrupt:
-        pass
+    ioloop.run()
+
