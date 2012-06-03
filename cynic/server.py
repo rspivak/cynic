@@ -165,7 +165,7 @@ def _get_handler_configs(config):
 class IOLoop(object):
     """Main IO loop.
 
-    Spawns children to handle requests.
+    Spawns 'crafty' children to handle client requests.
     """
     def __init__(self, handler_configs):
         self.handler_configs = handler_configs
@@ -272,8 +272,16 @@ def main():
     parser = optparse.OptionParser()
     parser.add_option('-c', '--config', dest='config_path',
                       help='Path to configuration file')
+    parser.add_option(
+        '-d', '--dump', dest='dump', action='store_true',
+        default=False, help='Dump default configuration to STDOUT'
+        )
 
     options, args = parser.parse_args()
+
+    if options.dump:
+        print DEFAULT_CONFIG
+        sys.exit(0)
 
     path = options.config_path
     if path is None:
