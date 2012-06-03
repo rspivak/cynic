@@ -41,52 +41,78 @@ POLL_TIMEOUT = 500 # 0.5 sec
 BACKLOG = 5
 
 DEFAULT_CONFIG = """\
+############################################################
+# HTTP protocol specific                                   #
+############################################################
+
 [handler:httphtml]
-# send simple 'hello world!' HTML page over HTTP as a response
+# sends simple 'hello world!' HTML page over HTTP as a response
+# and terminates
 class = cynic.handlers.httphtml.HTTPHtmlResponse
 #args = ('/tmp/test.html', )
 host = 0.0.0.0
 port = 2000
 
 [handler:httpjson]
-# send simple 'hello world!' JSON over HTTP as a response
+# sends simple 'hello world!' JSON over HTTP as a response
+# and terminates
 class = cynic.handlers.httpjson.HTTPJsonResponse
 #args = ('/tmp/test.json', )
 host = 0.0.0.0
 port = 2001
 
 [handler:httpnone]
-# send headers, but not the response body
+# sends headers, but not the response body and terminates
 class = cynic.handlers.httpnone.HTTPNoBodyResponse
 host = 0.0.0.0
 port = 2002
 
 [handler:httpslow]
-# send one byte of response every 30 seconds
+# sends one byte of the response every 30 seconds.
+# when the data to be sent is exhausted - terminates
 class = cynic.handlers.httpslow.HTTPSlowResponse
 #args = ('/tmp/test.json', 'application/json', 1)
 host = 0.0.0.0
 port = 2003
 
+
+############################################################
+# Any TCP socket protocol                                  #
+############################################################
+
 [handler:reset]
-# accepts connection and sends RST packet right away
+# accepts a connection, sends an RST packet right away
+# and terminates
 class = cynic.handlers.reset.RSTResponse
 host = 0.0.0.0
-port = 2004
+port = 2020
 
 [handler:random]
-# accepts connection and sends 7 bytes from /dev/urandom
+# accepts a connection, sends 7 bytes from the /dev/urandom device
+# and terminates
 class = cynic.handlers.rnd.RandomDataResponse
 host = 0.0.0.0
-port = 2005
+port = 2021
 
 [handler:noresp]
-# accepts connection, but doesn't send any response back.
+# accepts a connection, but doesn't send any response back.
 # sleeps for 24 hours and exits
 class = cynic.handlers.noresp.NoResponse
 host = 0.0.0.0
-port = 2006
-"""
+port = 2022
+
+############################################################
+# System handlers used internally by the Cynic server      #
+############################################################
+
+[handler:unixlog]
+# a logging server that accepts connections over Unix socket
+# from multiple local processes to output passed log records
+class = cynic.handlers.log.LogRecordHandler
+host = %(socketpath)s
+port = 0
+family = unix
+""" % dict(socketpath=LOG_UNIX_SOCKET)
 
 # Setup our console logger
 logger = get_console_logger('server')
@@ -135,21 +161,13 @@ def _load_config(fname):
 
 
 class HandlerConfig(object):
-    def __init__(self, klass, args, host, port, family='inet'):
+    def __init__(self, klass, args, host, port, family):
         self.klass = klass
         self.args = args
         self.host = host
         self.port = port
         self.family = family
         self.socket = None # set up by the server
-
-
-def _get_loghandler_config():
-    # special config for the server's log handler
-    klass, args = _resolve('cynic.handlers.log.LogRecordHandler'), ()
-    host, port = LOG_UNIX_SOCKET, None
-    hconfig = HandlerConfig(klass, args, host, port, family='unix')
-    return hconfig
 
 
 def _get_handler_configs(config):
@@ -165,11 +183,12 @@ def _get_handler_configs(config):
         args = ()
         if config.has_option(section, 'args'):
             args = eval(config.get(section, 'args'), {})
-        hconfig = HandlerConfig(klass, args, host, port)
+        if config.has_option(section, 'family'):
+            family = config.get(section, 'family')
+        else:
+            family = 'inet'
+        hconfig = HandlerConfig(klass, args, host, port, family)
         configs.append(hconfig)
-
-    # special config for the server's log handler
-    configs.append(_get_loghandler_config())
 
     return configs
 
