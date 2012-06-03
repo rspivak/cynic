@@ -8,7 +8,7 @@ cynical.
 Let's check out help options
 ----------------------------
 
-.. code-block :: bash
+::
 
     $ cynic -h
     Usage: cynic [options]
@@ -28,7 +28,7 @@ Let's check out help options
 Default configuration
 ---------------------
 
-.. code-block :: bash
+::
 
     $ cynic -h
 
