@@ -48,6 +48,8 @@ Cynic will try hard to cause injury to your system.
 
 Read the formatted docs at `http://cynic.readthedocs.org <http://cynic.readthedocs.org>`_
 
+**WATCH SCREENCAST**: `https://vimeo.com/43375697 <https://vimeo.com/43375697>`_
+
 Installation
 ------------
 
