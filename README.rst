@@ -26,16 +26,19 @@ ports:
 
 
 Test different services:
+========================
+
+Connect to the service on port 2020 and get RST packet right away
+which causes 'Connection reset by peer' message on the command line
 
 ::
 
-    $ # connect to a service and get RST packet right away
-    $ # which causes 'Connection reset by peer' message on the command line
     $ curl http://localhost:2020
     curl: (56) Recv failure: Connection reset by peer
 
+Connect to the service on port 2021 and get back 7 bytes of random data
+
 ::
-    # connect to a service and get back 7 bytes of random data
     $ telnet localhost 2021
     Trying 127.0.0.1...
     Connected to localhost.
