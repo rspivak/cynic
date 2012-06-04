@@ -251,8 +251,7 @@ where
 
 *class* - a fully qualified dotted Python name of the handler class
 
-*args* - a tuple of Python values to pass as positional arguments to the
-       handler's constructor.
+*args* - a tuple of Python values to pass as positional arguments to the handler's constructor.
 
        **First argument** specifies absolute path to a file to read
        the data from instead of using a default data sting 'Hello, world!'
