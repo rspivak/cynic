@@ -273,16 +273,16 @@ Extending Cynic with custom handlers
 
 It's very easy to add your own handler to the Cynic.
 
-1. To add a new TCP handler inherit from `cynic.handlers.base.BaseHandler`
-   and implement the `handle` method which directly interacts with a
+1. To add a new TCP handler inherit from *cynic.handlers.base.BaseHandler*
+   and implement the *handle* method which directly interacts with a
    TCP socket.
 
 2. To add a new HTTP handler inherit from
-   `cynic.handlers.base.BaseHTTPHandler` and implement your custom
+   *cynic.handlers.base.BaseHTTPHandler* and implement your custom
    do_GET, do_POST, do_PUT, etc methods.
    For more information about the handler see `BaseHTTPRequestHandler <http://docs.python.org/library/basehttpserver.html#BaseHTTPServer.BaseHTTPRequestHandler>`_
 
-3. Add a section `[handler:my_new_name]` to the INI configuration file with corresponding
+3. Add a section *[handler:my_new_name]* to the INI configuration file with corresponding
    configuration parameters.
 
 Acknowledgments
