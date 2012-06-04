@@ -1,9 +1,48 @@
-What is this?
--------------
+Cynic(al) what?
+---------------
 **Cynic** is a test harness that can be used to simulate
 remote integration points (mainly Web services) that are nasty,
 malicious, and cunning. Its goal is to make your system under test
 cynical.
+
+
+Quick intro
+-----------
+
+Start Cynic which in turn will start multiple services on different
+ports:
+
+::
+
+    $ cynic
+    INFO     [2012-06-03 23:44:35,603] server: Starting 'HTTPHtmlResponse'   on port 2000
+    INFO     [2012-06-03 23:44:35,603] server: Starting 'HTTPJsonResponse'   on port 2001
+    INFO     [2012-06-03 23:44:35,604] server: Starting 'HTTPNoBodyResponse' on port 2002
+    INFO     [2012-06-03 23:44:35,604] server: Starting 'HTTPSlowResponse'   on port 2003
+    INFO     [2012-06-03 23:44:35,604] server: Starting 'RSTResponse'        on port 2020
+    INFO     [2012-06-03 23:44:35,604] server: Starting 'RandomDataResponse' on port 2021
+    INFO     [2012-06-03 23:44:35,604] server: Starting 'NoResponse'         on port 2022
+    INFO     [2012-06-03 23:44:35,604] server: Starting 'LogRecordHandler'   on port /tmp/_cynic.sock
+
+
+Test different services:
+
+::
+
+    $ # connect to a service and get RST packet right away
+    $ # which causes 'Connection reset by peer' message on the command line
+    $ curl http://localhost:2020
+    curl: (56) Recv failure: Connection reset by peer
+
+::
+    # connect to a service and get back 7 bytes of random data
+    $ telnet localhost 2021
+    Trying 127.0.0.1...
+    Connected to localhost.
+    Escape character is '^]'.
+    #6
+    Connection closed by foreign host.
+
 
 Let's check out help options
 ----------------------------
