@@ -25,8 +25,8 @@ ports:
     INFO     [2012-06-03 23:44:35,604] server: Starting 'LogRecordHandler'   on port /tmp/_cynic.sock
 
 
-Test different services:
-========================
+Test different services
+=======================
 
 Connect to the service on port 2020 and get RST packet right away
 which causes 'Connection reset by peer' message on the command line
@@ -39,6 +39,7 @@ which causes 'Connection reset by peer' message on the command line
 Connect to the service on port 2021 and get back 7 bytes of random data
 
 ::
+
     $ telnet localhost 2021
     Trying 127.0.0.1...
     Connected to localhost.
