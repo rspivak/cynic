@@ -1,2 +1,3 @@
 *.pyc
 cynic.egg-info
+docs/build
