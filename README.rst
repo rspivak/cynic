@@ -267,6 +267,27 @@ where
 *port* - port to listen on (not applicable for Unix sockets)
 
 
+Even with this service alone you can be creative and come up with
+several test scenarios that will make the life of your system under
+test quite unbearable:
+
+1. Specify file in the *args* that contains megabytes of data and see how
+   your system handles such a large response
+
+2. You can change file path and content type arguments to send HTML,
+   JSON, XML, Plain text, etc
+
+3. You can send HTML data but set Content-Type header value to
+   *application/json*
+
+4. You can change time interval to test your socket read timeout
+   expiration or lack thereof.
+
+5. You can have all above as separate services on different ports.
+   Just add *[handler:httpslow1]*, *[handler:httpslow2]*, etc. sections to
+   the INI file and tweak the *args*.
+
+
 Extending Cynic with custom handlers
 ------------------------------------
 
@@ -283,6 +304,8 @@ It's very easy to add your own handler to the Cynic.
 
 3. Add a section *[handler:my_new_name]* to the INI configuration file with corresponding
    configuration parameters.
+
+**XXX: Full example?**
 
 Acknowledgments
 ---------------
