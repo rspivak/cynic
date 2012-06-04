@@ -232,7 +232,7 @@ There are basically two types of handlers:
 Let's have a closer look at some of them.
 
 cynic.handlers.httpslow.HTTPSlowResponse
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+========================================
 
 This handler sends one byte of the HTTP response every 30 seconds.
 The config part is as follows
