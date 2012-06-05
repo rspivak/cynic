@@ -44,7 +44,7 @@ remote systems right from your command line.
 
 Cynic will try hard to cause injury to your system.
 
-*It's goal is to make your system under test cynical.*
+*Its goal is to make your system under test cynical.*
 
 Read the formatted docs at `http://cynic.readthedocs.org <http://cynic.readthedocs.org>`_
 
